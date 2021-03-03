@@ -8,11 +8,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<meta name="keywords" content="HTML, Javascript, Visual Experience" />
 
-	<link rel="stylesheet" href="assets/css/style.css">
+	<!-- <link rel="stylesheet" href="assets/css/style.css"> -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 </head>
 <body>
-    <textarea style="width: 100%; resize: vertical;" rows="10">
+    <textarea style="width: 100%; resize: vertical; font-family:Verdana, Geneva, Tahoma, sans-serif; background-color: #f7f7f7; border-color: #f7f7f7; padding: 8px; box-sizing: border-box;" rows="10">
 {
     "allowRemoteResourceManagement": true,
     "policyEnforcementMode": "ENFORCING",
@@ -139,13 +139,20 @@
     "decisionStrategy": "UNANIMOUS"
     }
     </textarea>
-    <div class="canvas">
+    <div class="canvas" style="display: flex; justify-content: center; align-items: center; min-height: 50vh;">
     </div>
     <script>
         const textarea = document.querySelector('textarea')
         const canvas = document.querySelector('div.canvas')
 
-        mermaid.initialize({startOnLoad: false});
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#f7f7f7',
+                secondaryColor: '#cddc39',
+            }
+        });
 
         const renderText = () => {
             const kc = JSON.parse(textarea.value)
