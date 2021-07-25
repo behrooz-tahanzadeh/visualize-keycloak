@@ -1,0 +1,28 @@
+div.input-container {
+    display: flex;
+}
+
+textarea {
+    flex:auto 1 1;
+    resize: vertical;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: small;
+    background-color: #f7f7f7;
+    color: #333;
+    border-color: #f7f7f7;
+    padding: 8px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    margin: 4px;
+}
+
+textarea.error {
+    background-color: rgb(255, 212, 208);
+}
+
+div.canvas {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
+}
