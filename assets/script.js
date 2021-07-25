@@ -37,7 +37,7 @@ document.onreadystatechange = () => {
 
         inputTextArea.addEventListener('input', jsonInputTextAreaChanged)
 
-        fetch('/assets/default-value.json')
+        fetch('assets/default-value.json')
             .then(response => {
                 response.text().then(value => {
                     inputTextArea.value = value
