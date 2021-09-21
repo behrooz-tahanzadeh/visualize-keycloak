@@ -4,6 +4,7 @@ document.onreadystatechange = () => {
             startOnLoad: false,
             securityLevel: 'loose',
             theme: 'base',
+            htmlLabels:true,
             themeVariables: {
                 primaryColor: '#f7f7f7',
                 secondaryColor: '#cddc39',
@@ -14,10 +15,10 @@ document.onreadystatechange = () => {
         const outputTextArea = document.querySelector('textarea#output')
         const canvas = document.querySelector('div.canvas')
 
-        const jsonInputTextAreaChanged = () => {
+        const jsonInputTextAreaChanged = (isolateId) => {
             try {
                 const inputObj = JSON.parse(inputTextArea.value)
-                const outputScript = generateMermaidScriptFromKeycloakAuthzConfig(inputObj)
+                const outputScript = generateMermaidScriptFromKeycloakAuthzConfig(inputObj, isolateId)
                 outputTextArea.value = outputScript
 
                 mermaid.render(
@@ -35,7 +36,7 @@ document.onreadystatechange = () => {
             }
         }
 
-        inputTextArea.addEventListener('input', jsonInputTextAreaChanged)
+        inputTextArea.addEventListener('input', () => jsonInputTextAreaChanged())
 
         fetch('assets/default-value.json')
             .then(response => {
@@ -44,29 +45,48 @@ document.onreadystatechange = () => {
                     jsonInputTextAreaChanged()
                 })
             })
+
+        document.addEventListener('click', (event) => {
+            const node = event.target.closest('.node.default')
+            if(node && node.id.startsWith("flowchart-")) {
+                const nodeId = node.id.substring("flowchart-".length)
+                window.location.hash = nodeId
+                jsonInputTextAreaChanged(nodeId)
+            }
+        })
     }
 };
 
-function generateMermaidScriptFromKeycloakAuthzConfig (kc) {
+function generateMermaidScriptFromKeycloakAuthzConfig (kc, isolateId) {
     const lines = []
-
     const scopesIdLookUp = {}
     const resourcesIdLookUp = {}
     const policiesIdLookUp = {}
     const roles = []
 
+    // {
+    //     "id": "e283b2af-45f6-44fa-993e-5f9567c4eeb2",
+    //     "name": "kc_create"
+    // }
     for (const {id, name} of kc.scopes) {
         scopesIdLookUp[name] = id
     }
 
+    const includedIds = []
+
     for (const {name, _id, scopes} of kc.resources) {
-        resourcesIdLookUp[name]=_id
-        lines.push(`${_id}[(${name})]`)
-        
-        for (const scope of scopes ?? []) {
-            const resourceScopeId = [_id, scopesIdLookUp[scope.name]].join('-')
-            lines.push(`${resourceScopeId} --> ${_id}`)
-            lines.push(`${resourceScopeId}{{${scope.name}}}`)
+        console.log(isolateId, _id, _id === isolateId)
+        if(isolateId === undefined || isolateId.startsWith(_id)) {
+            resourcesIdLookUp[name]=_id
+            includedIds.push(_id)
+            lines.push(`${_id}[(${name})]`)
+            
+            for (const scope of scopes ?? []) {
+                const resourceScopeId = [_id, scopesIdLookUp[scope.name]].join('-')
+                lines.push(`${resourceScopeId} --> ${_id}`)
+                lines.push(`${resourceScopeId}{{${scope.name}}}`)
+                includedIds.push(resourceScopeId)
+            }
         }
     }
 
@@ -115,7 +135,10 @@ function generateMermaidScriptFromKeycloakAuthzConfig (kc) {
         for(const resourceName of JSON.parse(config.resources)) {
             for(const scopeName of JSON.parse(config.scopes)) {
                 const resourceScopeId = [resourcesIdLookUp[resourceName], scopesIdLookUp[scopeName]].join('-')
-                lines.push(`${id} --> ${resourceScopeId}`)
+
+                if(includedIds.includes(resourceScopeId)) {
+                    lines.push(`${id} --> ${resourceScopeId}`)
+                }
             }
         }
     }
