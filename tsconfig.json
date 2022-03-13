@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "lib": ["ES6", "DOM"],
+        "target": "ES6",
+        "outDir": "./dist",
+        "module": "ES6",
+        "noImplicitAny": false,
+        "declaration": false,
+        "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "strict":true,
+        "esModuleInterop": true
+    },
+    "include": ["./src/*.ts"],
+    "exclude": []
+}
