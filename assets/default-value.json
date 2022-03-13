@@ -2,124 +2,101 @@
     "allowRemoteResourceManagement": true,
     "policyEnforcementMode": "ENFORCING",
     "resources": [
-        {
-        "name": "media-image",
-        "ownerManagedAccess": false,
-        "displayName": "MediaImage",
-        "attributes": {},
-        "_id": "6d05a80e-9605-4125-8190-57d04d4a7d5f",
-        "uris": [],
-        "scopes": [
-            {
-            "name": "kc_view"
-            }
-        ]
-        },
-        {
-        "name": "kc_resource_1",
-        "ownerManagedAccess": false,
-        "displayName": "kc_resource_1",
-        "attributes": {},
-        "_id": "8c81ed2b-8f81-4bf3-a345-e1789a590ca6",
-        "uris": [],
-        "scopes": [
-            {
-            "name": "kc_create"
-            },
-            {
-            "name": "kc_view"
-            }
-        ]
-        },
-        {
+      {
         "name": "Default Resource",
-        "type": "urn:kc_auth:resources:default",
+        "type": "urn:authz:resources:default",
         "ownerManagedAccess": false,
         "attributes": {},
-        "_id": "a87a4a2b-4bb2-4b7b-add7-57d448ac7b63",
+        "_id": "20676a32-a01e-4a6d-9040-44f48ac29a1a",
         "uris": [
-            "/*"
+          "/*"
         ]
-        }
+      },
+      {
+        "name": "test-resource",
+        "ownerManagedAccess": false,
+        "displayName": "test-resource",
+        "attributes": {},
+        "_id": "19c90999-518d-4ff6-ab77-8b5a788713c1",
+        "uris": []
+      }
     ],
     "policies": [
-        {
-        "id": "8a78bec7-b644-47e2-af48-49337cf02224",
-        "name": "is_food_scout",
-        "type": "role",
-        "logic": "POSITIVE",
-        "decisionStrategy": "UNANIMOUS",
-        "config": {
-            "roles": "[{\"id\":\"food-scouts\",\"required\":true}]"
-        }
-        },
-        {
-        "id": "0bc426aa-7feb-4474-be87-d5942a2447d9",
-        "name": "kc_is_role",
-        "type": "role",
-        "logic": "POSITIVE",
-        "decisionStrategy": "UNANIMOUS",
-        "config": {
-            "roles": "[{\"id\":\"kc_role_2\",\"required\":false},{\"id\":\"kc_role_1\",\"required\":true}]"
-        }
-        },
-        {
-        "id": "d7b7515e-f5cb-44b5-80f9-95108ec803f4",
+      {
+        "id": "0bc9f67b-5e34-4b07-be6c-3b0957baa3be",
         "name": "Default Policy",
         "description": "A policy that grants access only for users within this realm",
         "type": "js",
         "logic": "POSITIVE",
         "decisionStrategy": "AFFIRMATIVE",
         "config": {
-            "code": "// by default, grants any permission associated with this policy\n$evaluation.grant();\n"
+          "code": "// by default, grants any permission associated with this policy\n$evaluation.grant();\n"
         }
-        },
-        {
-        "id": "c6803e05-9fe1-4974-b678-214d9e8eefe8",
-        "name": "view_images_permission",
-        "type": "scope",
+      },
+      {
+        "id": "b94ee317-7cd0-4aee-8483-b72cf93d44ef",
+        "name": "Has OTP",
+        "description": "A policy that grants access only for users with OTP credentials",
+        "type": "script-has-otp.js",
+        "logic": "POSITIVE",
+        "decisionStrategy": "UNANIMOUS",
+        "config": {}
+      },
+      {
+        "id": "57559c8c-e82d-4760-8ee2-d858679ecbac",
+        "name": "is_admin",
+        "type": "role",
+        "logic": "NEGATIVE",
+        "decisionStrategy": "UNANIMOUS",
+        "config": {
+          "roles": "[{\"id\":\"admin\",\"required\":false},{\"id\":\"create-realm\",\"required\":false}]"
+        }
+      },
+      {
+        "id": "590f8018-7fd6-4d7f-81c1-72388334fa2c",
+        "name": "aggregate_policy",
+        "type": "aggregate",
         "logic": "POSITIVE",
         "decisionStrategy": "UNANIMOUS",
         "config": {
-            "resources": "[\"media-image\"]",
-            "scopes": "[\"kc_view\"]",
-            "applyPolicies": "[\"is_food_scout\"]"
+          "applyPolicies": "[\"is_admin\",\"Has OTP\"]"
         }
-        },
-        {
-        "id": "19708d3a-184d-486a-961e-6d662453a54d",
-        "name": "kc_permission_1",
-        "type": "scope",
-        "logic": "POSITIVE",
-        "decisionStrategy": "UNANIMOUS",
-        "config": {
-            "resources": "[\"kc_resource_1\"]",
-            "scopes": "[\"kc_create\"]",
-            "applyPolicies": "[\"kc_is_role\"]"
-        }
-        },
-        {
-        "id": "8d11eb0d-dc3a-43c5-a0dc-95ba65f8711b",
+      },
+      {
+        "id": "cc5489b2-4236-49f5-b10e-42bb9cc48bc3",
         "name": "Default Permission",
         "description": "A permission that applies to the default resource type",
         "type": "resource",
         "logic": "POSITIVE",
         "decisionStrategy": "UNANIMOUS",
         "config": {
-            "defaultResourceType": "urn:kc_auth:resources:default",
-            "applyPolicies": "[\"Default Policy\"]"
+          "defaultResourceType": "urn:authz:resources:default",
+          "applyPolicies": "[\"Default Policy\"]"
         }
+      },
+      {
+        "id": "0e7fa3e2-95e6-479a-84ac-b4f452932b7a",
+        "name": "_test-resource",
+        "type": "resource",
+        "logic": "POSITIVE",
+        "decisionStrategy": "UNANIMOUS",
+        "config": {
+          "resources": "[\"test-resource\"]",
+          "applyPolicies": "[\"Has OTP\"]"
         }
+      },
+      {
+        "id": "4dbada4f-912c-4516-9afb-4ef063ed71f2",
+        "name": "_te2",
+        "type": "resource",
+        "logic": "POSITIVE",
+        "decisionStrategy": "UNANIMOUS",
+        "config": {
+          "resources": "[\"test-resource\"]",
+          "applyPolicies": "[\"is_admin\",\"aggregate_policy\"]"
+        }
+      }
     ],
-    "scopes": [
-        {
-        "id": "b3882846-54d2-4ccf-a714-e9630d6fd564",
-        "name": "kc_view"
-        },
-        {
-        "id": "e283b2af-45f6-44fa-993e-5f9567c4eeb2",
-        "name": "kc_create"
-        }
-    ],
+    "scopes": [],
     "decisionStrategy": "UNANIMOUS"
-}
+  }

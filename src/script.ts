@@ -21,11 +21,10 @@ document.onreadystatechange = () => {
 
         if(inputTextArea && outputTextArea && canvas) {
 
-            const jsonInputTextAreaChanged = (isolateId?: string) => {
+            const jsonInputTextAreaChanged = () => {
                 try {
                     const inputObj = JSON.parse(inputTextArea.value)
-                    console.log(inputObj)
-                    const outputScript = generateMermaidScript(inputObj, isolateId)
+                    const outputScript = generateMermaidScript(inputObj)
                     outputTextArea.value = outputScript
     
                     mermaid.render(
@@ -55,11 +54,55 @@ document.onreadystatechange = () => {
     
             document.addEventListener('click', (event) => {
                 const node = (event.target as HTMLElement).closest('.node.default')
-                console.log(node)
                 if(node && node.id.startsWith("flowchart-")) {
                     const nodeId = node.id.substring("flowchart-".length).substring(0, 36)
-                    window.location.hash = nodeId
-                    jsonInputTextAreaChanged(nodeId)
+
+                    canvas.querySelectorAll<SVGGElement>('g.edgePath').forEach(e => {
+                        e.style.opacity = '0.1'
+                        e.style.transition = '0.5s opacity'
+
+                        const p = e.querySelector<SVGPathElement>('path')
+                        if(p) p.style.strokeWidth = '1'
+                    })
+
+                    let start = [nodeId]
+
+                    while(start.length > 0) {
+                        const startClasses = start.map(c => `g.edgePath.LS-${c}`).join(', ')
+                        const edges = canvas.querySelectorAll<SVGGElement>(startClasses)
+                        start = []
+                        edges.forEach(e => {
+                            e.style.opacity = '1'
+                            const p = e.querySelector<SVGPathElement>('path')
+                            if(p) p.style.strokeWidth = '3'
+
+                            const le = Array
+                                .from(e.classList)
+                                .find(c => c.startsWith('LE-'))
+                                ?.substring(3)
+
+                            if(le) start.push(le)
+                        })
+                    }
+
+                    start = [nodeId]
+
+                    while(start.length > 0) {
+                        const startClasses = start.map(c => `g.edgePath.LE-${c}`).join(', ')
+                        const edges = canvas.querySelectorAll<SVGGElement>(startClasses)
+                        start = []
+                        edges.forEach(e => {
+                            e.style.opacity = '1'
+                            const p = e.querySelector<SVGPathElement>('path')
+                            if(p) p.style.strokeWidth = '3'
+                            const le = Array
+                                .from(e.classList)
+                                .find(c => c.startsWith('LS-'))
+                                ?.substring(3)
+
+                            if(le) start.push(le)
+                        })
+                    }
                 }
             })
         }

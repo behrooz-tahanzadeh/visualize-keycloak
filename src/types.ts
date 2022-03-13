@@ -53,6 +53,14 @@ export interface ScopePolicy extends Policy {
 export interface ResourcePolicy extends Policy {
     type: 'resource'
     config: {
+        resources: string | undefined
+        applyPolicies: string
+    }
+}
+
+export interface AggregatePolicy extends Policy {
+    type: 'aggregate'
+    config: {
         applyPolicies: string
     }
 }
@@ -66,7 +74,7 @@ export interface ResouceServer {
     allowRemoteResourceManagement: boolean
     policyEnforcementMode: string
     resources: Resource[]
-    policies: (RolePolicy|JsPolicy|ScopePolicy|ResourcePolicy)[]
+    policies: (RolePolicy|JsPolicy|ScopePolicy|ResourcePolicy|AggregatePolicy)[]
     scopes: Scope[]
     decisionStrategy: string
 }

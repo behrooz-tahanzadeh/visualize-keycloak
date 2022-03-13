@@ -4,7 +4,7 @@ interface LookUp {
     [name: string]: string
 }
 
-export default function generateMermaidScript(resourceServer: ResouceServer, isolateId?: string) {
+export default function generateMermaidScript(resourceServer: ResouceServer) {
     const lines: string[] = []
 
     const resourcesIdLookUp: LookUp = {}
@@ -64,18 +64,25 @@ export default function generateMermaidScript(resourceServer: ResouceServer, iso
                 const scopes = JSON.parse(policy.config.scopes) as string[]
 
                 for (const scope of scopes) {
-                    const selected = (
-                        isolateId === undefined ||
-                        policy.id === isolateId ||
-                        resourcesIdLookUp[resources[0]] === isolateId
-                    )
-
                     lines.push([
                         policy.id,
                         resourcesIdLookUp[resources[0]]
-                    ]. join(selected ?
-                        ` == ${scope} === ` :
-                        ` -. ${scope} .-`))
+                    ]. join(` == ${scope} === `))
+                }
+            }
+        }
+    }
+
+    { // Add Scope Policy -> Resouce connections
+        for (const policy of resourceServer.policies) {
+            if(policy.type === 'resource') {
+                const resources = JSON.parse(policy.config.resources ?? "[]") as string[]
+
+                for (const resource of resources) {
+                    lines.push([
+                        policy.id,
+                        resourcesIdLookUp[resource]
+                    ]. join(` === `))
                 }
             }
         }
@@ -83,19 +90,14 @@ export default function generateMermaidScript(resourceServer: ResouceServer, iso
 
     { // Add apply policies connections
         for (const policy of resourceServer.policies) {
-            if(policy.type === 'scope' || policy.type === 'resource') {
+            if(policy.type === 'scope' || policy.type === 'resource' || policy.type === 'aggregate') {
                 const policyNames = JSON.parse(policy.config.applyPolicies) as string[]
                 
                 policyNames.forEach(y => {
-                    const selected = (
-                        isolateId === undefined ||
-                        policy.id === isolateId ||
-                        policiesIdLookUp[y] === isolateId
-                    )
                     lines.push([
                         policiesIdLookUp[y],
                         policy.id
-                    ].join(selected ? ' === ' : '-.-'))
+                    ].join(' === '))
                 })
             }
         }

@@ -1,4 +1,5 @@
-export default function generateMermaidScript(resourceServer, isolateId) {
+export default function generateMermaidScript(resourceServer) {
+    var _a;
     const lines = [];
     const resourcesIdLookUp = {};
     const policiesIdLookUp = {};
@@ -47,31 +48,36 @@ export default function generateMermaidScript(resourceServer, isolateId) {
                 const resources = JSON.parse(policy.config.resources);
                 const scopes = JSON.parse(policy.config.scopes);
                 for (const scope of scopes) {
-                    const selected = (isolateId === undefined ||
-                        policy.id === isolateId ||
-                        resourcesIdLookUp[resources[0]] === isolateId);
                     lines.push([
                         policy.id,
                         resourcesIdLookUp[resources[0]]
-                    ].join(selected ?
-                        ` == ${scope} === ` :
-                        ` -. ${scope} .-`));
+                    ].join(` == ${scope} === `));
+                }
+            }
+        }
+    }
+    { // Add Scope Policy -> Resouce connections
+        for (const policy of resourceServer.policies) {
+            if (policy.type === 'resource') {
+                const resources = JSON.parse((_a = policy.config.resources) !== null && _a !== void 0 ? _a : "[]");
+                for (const resource of resources) {
+                    lines.push([
+                        policy.id,
+                        resourcesIdLookUp[resource]
+                    ].join(` === `));
                 }
             }
         }
     }
     { // Add apply policies connections
         for (const policy of resourceServer.policies) {
-            if (policy.type === 'scope' || policy.type === 'resource') {
+            if (policy.type === 'scope' || policy.type === 'resource' || policy.type === 'aggregate') {
                 const policyNames = JSON.parse(policy.config.applyPolicies);
                 policyNames.forEach(y => {
-                    const selected = (isolateId === undefined ||
-                        policy.id === isolateId ||
-                        policiesIdLookUp[y] === isolateId);
                     lines.push([
                         policiesIdLookUp[y],
                         policy.id
-                    ].join(selected ? ' === ' : '-.-'));
+                    ].join(' === '));
                 });
             }
         }

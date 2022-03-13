@@ -16,11 +16,10 @@ document.onreadystatechange = () => {
         const outputTextArea = document.querySelector('textarea#output');
         const canvas = document.querySelector('div.canvas');
         if (inputTextArea && outputTextArea && canvas) {
-            const jsonInputTextAreaChanged = (isolateId) => {
+            const jsonInputTextAreaChanged = () => {
                 try {
                     const inputObj = JSON.parse(inputTextArea.value);
-                    console.log(inputObj);
-                    const outputScript = generateMermaidScript(inputObj, isolateId);
+                    const outputScript = generateMermaidScript(inputObj);
                     outputTextArea.value = outputScript;
                     mermaid.render('Graph', outputScript, (svgCode) => canvas.innerHTML = svgCode);
                     inputTextArea.classList.remove('error');
@@ -42,11 +41,51 @@ document.onreadystatechange = () => {
             });
             document.addEventListener('click', (event) => {
                 const node = event.target.closest('.node.default');
-                console.log(node);
                 if (node && node.id.startsWith("flowchart-")) {
                     const nodeId = node.id.substring("flowchart-".length).substring(0, 36);
-                    window.location.hash = nodeId;
-                    jsonInputTextAreaChanged(nodeId);
+                    canvas.querySelectorAll('g.edgePath').forEach(e => {
+                        e.style.opacity = '0.1';
+                        e.style.transition = '0.5s opacity';
+                        const p = e.querySelector('path');
+                        if (p)
+                            p.style.strokeWidth = '1';
+                    });
+                    let start = [nodeId];
+                    while (start.length > 0) {
+                        const startClasses = start.map(c => `g.edgePath.LS-${c}`).join(', ');
+                        const edges = canvas.querySelectorAll(startClasses);
+                        start = [];
+                        edges.forEach(e => {
+                            var _a;
+                            e.style.opacity = '1';
+                            const p = e.querySelector('path');
+                            if (p)
+                                p.style.strokeWidth = '3';
+                            const le = (_a = Array
+                                .from(e.classList)
+                                .find(c => c.startsWith('LE-'))) === null || _a === void 0 ? void 0 : _a.substring(3);
+                            if (le)
+                                start.push(le);
+                        });
+                    }
+                    start = [nodeId];
+                    while (start.length > 0) {
+                        const startClasses = start.map(c => `g.edgePath.LE-${c}`).join(', ');
+                        const edges = canvas.querySelectorAll(startClasses);
+                        start = [];
+                        edges.forEach(e => {
+                            var _a;
+                            e.style.opacity = '1';
+                            const p = e.querySelector('path');
+                            if (p)
+                                p.style.strokeWidth = '3';
+                            const le = (_a = Array
+                                .from(e.classList)
+                                .find(c => c.startsWith('LS-'))) === null || _a === void 0 ? void 0 : _a.substring(3);
+                            if (le)
+                                start.push(le);
+                        });
+                    }
                 }
             });
         }
